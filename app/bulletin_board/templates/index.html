@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+bulletin_board here
+
+    <ul id="posts">
+    {% for post in posts %}
+        <li>{{ post.name }} - {{ post.content }}</li>
+    {% endfor %}
+    </ul>
+
+    <br />
+    <a href="add">Add a new post.</a>
+</body>
+</html>
