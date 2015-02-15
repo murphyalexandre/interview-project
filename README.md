@@ -9,3 +9,4 @@ Feature Requests
 
 
 Bugs
+* Date created on new Posts is not correct.

@@ -7,9 +7,13 @@
 <body>
 bulletin_board here
 
+    December 4, 2014 - 4:13pm
     <ul id="posts">
     {% for post in posts %}
-        <li>{{ post.name }} - {{ post.content }}</li>
+        <li>
+            {{ post.title }} -
+            {{ post.message }} -
+            {{ post.date_created.strftime('%B %d, %Y - %-I:%M%p') }}</li>
     {% endfor %}
     </ul>
 

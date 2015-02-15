@@ -54,3 +54,7 @@ docs/_build/
 target/
 
 .idea
+
+*.db
+
+.DS_Store
