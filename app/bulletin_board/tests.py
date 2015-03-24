@@ -17,6 +17,12 @@ class IPTestCase(unittest.TestCase):
         self.assertEqual(rv.status_code, 200)
         self.assertIn(b'Add a new post', rv.data)
 
+    def test_add(self):
+        rv = self.app.get('bulletin-board/add', follow_redirects=True)
+        self.assertEqual(rv.status_code, 200)
+        self.assertIn(b'Title', rv.data)
+        self.assertIn(b'Message', rv.data)
+
     def test_add_post(self):
         rv = self.app.post('bulletin-board/add', data=dict(
             title='A test title',

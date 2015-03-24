@@ -13,25 +13,42 @@ bulletin_board = Blueprint(
 )
 
 
-@bulletin_board.route('/', defaults={'page': 'index'}, methods=['GET'])
-@bulletin_board.route('/<string:page>',  methods=['GET'])
-def simple_page(page):
+@bulletin_board.route('/', methods=['GET'])
+def simple_page():
     try:
-        data = {}
-        if page == 'index':
-            data['posts'] = Post.query.all()
-        return render_template('{}.html'.format(page), **data)
+        data = {
+            'posts': Post.query.all()
+        }
+        return render_template('index.html', **data)
     except TemplateNotFound:
         abort(404)
 
 
-@bulletin_board.route('/add', methods=['POST'])
-def add():
-    post = Post(
-        title=request.form['title'],
-        message=request.form['message'],
-    )
-    db.session.add(post)
-    db.session.commit()
-    return redirect('/bulletin-board')
+@bulletin_board.route('/edit/<int:post_id>',  methods=['GET', 'POST'])
+def edit(post_id):
+    if request.method == 'POST':
+        post_id = request.form['id']
+        post = Post.query.get_or_404(post_id)
+        post.title = request.form['title']
+        post.message = request.form['message']
+        db.session.commit()
+        return redirect('/bulletin-board')
 
+    data = {
+        'post': Post.query.get_or_404(post_id)
+    }
+    return render_template('edit.html', **data)
+
+
+@bulletin_board.route('/add', methods=['GET', 'POST'])
+def add():
+    if request.method == 'POST':
+        post = Post(
+            title=request.form['title'],
+            message=request.form['message'],
+        )
+        db.session.add(post)
+        db.session.commit()
+        return redirect('/bulletin-board')
+
+    return render_template('add.html')

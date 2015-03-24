@@ -13,7 +13,9 @@ bulletin_board here
         <li>
             {{ post.title }} -
             {{ post.message }} -
-            {{ post.date_created.strftime('%B %d, %Y - %-I:%M%p') }}</li>
+            {{ post.date_created.strftime('%B %d, %Y - %-I:%M%p') }} -
+            <a href="edit/{{ post.id }}">Edit</a>
+        </li>
     {% endfor %}
     </ul>
 
