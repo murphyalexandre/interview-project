@@ -2,16 +2,19 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <title></title>
+    <title>bulletin_board - Edit Post - {{ post.title }}</title>
 </head>
 <body>
 
 
-bulletin_board
+<h1>bulletin_board</h1>
 
 
 <form action="" method="post">
 <input type="hidden" name="id" value="{{ post.id }}">
+Author:<br>
+<input type="text" name="author" value="{{ post.author }}" placeholder="Insert author here">
+<br>
 Title:<br>
 <input type="text" name="title" value="{{ post.title }}" placeholder="Insert title here">
 <br>

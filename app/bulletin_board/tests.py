@@ -6,10 +6,11 @@ from app.bulletin_board.models import Post
 
 class IPTestCase(unittest.TestCase):
 
-    def add_post(self, title, message):
+    def add_post(self, title, message, author):
         post = Post(
             title=title,
-            message=message
+            message=message,
+            author=author
         )
 
         db.session.add(post)
@@ -24,7 +25,8 @@ class IPTestCase(unittest.TestCase):
         db.create_all()
 
         # Create at least one post
-        self.add_post(title='Some Title', message='Some Message')
+        self.add_post(
+            title='Some Title', message='Some Message', author='Someone')
 
     def test_index(self):
         rv = self.app.get('bulletin-board/', follow_redirects=True)
@@ -35,6 +37,7 @@ class IPTestCase(unittest.TestCase):
         # We have at least our post
         self.assertIn(b'Some Title', rv.data)
         self.assertIn(b'Some Message', rv.data)
+        self.assertIn(b'Someone', rv.data)
 
     def test_add(self):
         rv = self.app.get('bulletin-board/add', follow_redirects=True)
@@ -42,15 +45,18 @@ class IPTestCase(unittest.TestCase):
         self.assertEqual(rv.status_code, 200)
         self.assertIn(b'Title', rv.data)
         self.assertIn(b'Message', rv.data)
+        self.assertIn(b'Author', rv.data)
 
     def test_add_post(self):
         rv = self.app.post('bulletin-board/add', data=dict(
             title='A test title',
-            message='A test message!'
+            message='A test message!',
+            author='A Person'
         ), follow_redirects=True)
 
         self.assertIn(b'A test title', rv.data)
         self.assertIn(b'A test message!', rv.data)
+        self.assertIn(b'A Person', rv.data)
 
     def test_add_post_empty(self):
         rv = self.app.post(
@@ -60,7 +66,9 @@ class IPTestCase(unittest.TestCase):
 
     def test_post_model_date_created(self):
         post = self.add_post(
-            'A test post', 'This is the message in my test post.')
+            title='A test post',
+            message='This is the message in my test post.',
+            author='A Person')
 
         self.assertTrue(post.date_created)
 
@@ -73,8 +81,10 @@ class IPTestCase(unittest.TestCase):
         rv = self.app.get('bulletin-board/edit/1', follow_redirects=True)
 
         self.assertEqual(rv.status_code, 200)
+        self.assertIn(b'Author', rv.data)
         self.assertIn(b'Title', rv.data)
         self.assertIn(b'Message', rv.data)
+        self.assertIn(b'Someone', rv.data)
         self.assertIn(b'Some Title', rv.data)
         self.assertIn(b'Some Message', rv.data)
 
@@ -82,17 +92,19 @@ class IPTestCase(unittest.TestCase):
         rv = self.app.post('bulletin-board/edit/1', data=dict(
             id=1,
             title='A test title',
-            message='A test message!'
+            message='A test message!',
+            author='A Person'
         ), follow_redirects=True)
 
         self.assertIn(b'A test title', rv.data)
         self.assertIn(b'A test message!', rv.data)
+        self.assertIn(b'A Person', rv.data)
 
     def test_edit_post_empty(self):
         rv = self.app.post(
             'bulletin-board/edit/1', data=dict(), follow_redirects=True)
 
-        self.assetEqual(rv.status_code, 400)
+        self.assertEqual(rv.status_code, 400)
 
     def tearDown(self):
         db.drop_all()

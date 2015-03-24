@@ -31,6 +31,7 @@ def edit(post_id):
         post = Post.query.get_or_404(post_id)
         post.title = request.form['title']
         post.message = request.form['message']
+        post.author = request.form['author']
         db.session.commit()
         return redirect('/bulletin-board')
 
@@ -46,6 +47,7 @@ def add():
         post = Post(
             title=request.form['title'],
             message=request.form['message'],
+            author=request.form['author']
         )
         db.session.add(post)
         db.session.commit()

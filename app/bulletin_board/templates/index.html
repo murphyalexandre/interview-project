@@ -2,10 +2,11 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <title></title>
+    <title>bulletin_board</title>
 </head>
 <body>
-bulletin_board here
+
+<h1>bulletin_board</h1>
 
     December 4, 2014 - 4:13pm
     <ul id="posts">
@@ -13,7 +14,8 @@ bulletin_board here
         <li>
             {{ post.title }} -
             {{ post.message }} -
-            {{ post.date_created.strftime('%B %d, %Y - %-I:%M%p') }} -
+            by {{ post.author }} -
+            on {{ post.date_created.strftime('%B %d, %Y - %-I:%M%p') }} -
             <a href="edit/{{ post.id }}">Edit</a>
         </li>
     {% endfor %}

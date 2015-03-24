@@ -10,6 +10,7 @@ class Post(db.Model):
     title = db.Column(db.String(80))
     message = db.Column(db.String(120))
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
+    author = db.Column(db.String(255))
 
     def __repr__(self):
         return '<Post {}>'.format(self.title)
