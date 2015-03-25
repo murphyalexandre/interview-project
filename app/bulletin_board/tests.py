@@ -46,6 +46,45 @@ class IPTestCase(unittest.TestCase):
             title='Title No Comments', message='No Comments', author='Someone')
 
     def test_index(self):
+        self.add_post(
+            title='Title No Comments1',
+            message='No Comments1', author='Someone')
+        self.add_post(
+            title='Title No Comments2',
+            message='No Comments2', author='Someone')
+        self.add_post(
+            title='Title No Comments3',
+            message='No Comments3', author='Someone')
+        self.add_post(
+            title='Title No Comments4',
+            message='No Comments4', author='Someone')
+        self.add_post(
+            title='Title No Comments5',
+            message='No Comments5', author='Someone')
+        self.add_post(
+            title='Title No Comments6',
+            message='No Comments6', author='Someone')
+
+        rv = self.app.get('bulletin-board/', follow_redirects=True)
+
+        self.assertEqual(rv.status_code, 200)
+        self.assertIn(b'Add a new post', rv.data)
+
+        # We only have the latest 5 posts
+        self.assertIn(b'Someone', rv.data)
+        self.assertIn(b'Title No Comments6', rv.data)
+        self.assertIn(b'No Comments6', rv.data)
+        self.assertIn(b'Title No Comments5', rv.data)
+        self.assertIn(b'No Comments5', rv.data)
+        self.assertIn(b'Title No Comments4', rv.data)
+        self.assertIn(b'No Comments4', rv.data)
+        self.assertIn(b'Title No Comments3', rv.data)
+        self.assertIn(b'No Comments3', rv.data)
+        self.assertIn(b'Title No Comments2', rv.data)
+        self.assertIn(b'No Comments2', rv.data)
+
+
+    def test_index_limit(self):
         rv = self.app.get('bulletin-board/', follow_redirects=True)
 
         self.assertEqual(rv.status_code, 200)

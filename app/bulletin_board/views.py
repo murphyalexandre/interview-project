@@ -17,7 +17,7 @@ bulletin_board = Blueprint(
 def simple_page():
     try:
         data = {
-            'posts': Post.query.all()
+            'posts': Post.query.order_by(Post.date_created.desc()).limit(5)
         }
         return render_template('index.html', **data)
     except TemplateNotFound:
