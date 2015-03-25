@@ -1,7 +1,7 @@
 import unittest
 
 from app import app, db
-from app.bulletin_board.models import Post
+from app.bulletin_board.models import Post, Comment
 
 
 class IPTestCase(unittest.TestCase):
@@ -18,15 +18,32 @@ class IPTestCase(unittest.TestCase):
 
         return post
 
+    def add_comment(self, message, author, post=None):
+        comment = Comment(
+            message=message,
+            author=author
+        )
+
+        if post:
+            post.comments.append(comment)
+
+        db.session.add(comment)
+        db.session.commit()
+
+        return comment
+
     def setUp(self):
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///'
         app.config['TESTING'] = True
         self.app = app.test_client()
         db.create_all()
 
-        # Create at least one post
-        self.add_post(
+        # Create at least one post with a comment and one without
+        post = self.add_post(
             title='Some Title', message='Some Message', author='Someone')
+        self.add_comment(message='Some Comment', author='Commentor', post=post)
+        self.add_post(
+            title='Title No Comments', message='No Comments', author='Someone')
 
     def test_index(self):
         rv = self.app.get('bulletin-board/', follow_redirects=True)
@@ -105,6 +122,61 @@ class IPTestCase(unittest.TestCase):
             'bulletin-board/edit/1', data=dict(), follow_redirects=True)
 
         self.assertEqual(rv.status_code, 400)
+
+    def test_view_without_id(self):
+        rv = self.app.get('bulletin-board/view', follow_redirects=True)
+
+        self.assertEqual(rv.status_code, 404)
+
+    def test_view(self):
+        rv = self.app.get('bulletin-board/view/1', follow_redirects=True)
+
+        self.assertEqual(rv.status_code, 200)
+        self.assertIn(b'Some Title', rv.data)
+        self.assertIn(b'Some Message', rv.data)
+        self.assertIn(b'Someone', rv.data)
+        self.assertIn(b'Comments', rv.data)
+        self.assertIn(b'Author', rv.data)
+        self.assertIn(b'Some Comment', rv.data)
+        self.assertIn(b'Enter a comment', rv.data)
+        self.assertIn(b'Commentor', rv.data)
+
+    def test_view_no_comment(self):
+        rv = self.app.get('bulletin-board/view/2', follow_redirects=True)
+
+        self.assertEqual(rv.status_code, 200)
+        self.assertIn(b'Title No Comments', rv.data)
+        self.assertIn(b'No Comments', rv.data)
+        self.assertIn(b'Someone', rv.data)
+        self.assertIn(b'Comments', rv.data)
+        self.assertIn(b'Author', rv.data)
+        self.assertIn(b'Enter a comment', rv.data)
+        self.assertIn(b'Be the first to comment on this post.', rv.data)
+
+    def test_comment_empty(self):
+        rv = self.app.post(
+            'bulletin-board/comment', data=dict(), follow_redirects=True)
+
+        self.assertEqual(rv.status_code, 400)
+
+    def test_comment(self):
+        rv = self.app.post('bulletin-board/comment', data=dict(
+            id=1,
+            message='Another Comment',
+            author='Another Commentor'
+        ), follow_redirects=True)
+
+        self.assertEqual(rv.status_code, 200)
+        self.assertIn(b'Some Title', rv.data)
+        self.assertIn(b'Some Message', rv.data)
+        self.assertIn(b'Someone', rv.data)
+        self.assertIn(b'Comments', rv.data)
+        self.assertIn(b'Author', rv.data)
+        self.assertIn(b'Enter a comment', rv.data)
+        self.assertIn(b'Some Comment', rv.data)
+        self.assertIn(b'Commentor', rv.data)
+        self.assertIn(b'Another Comment', rv.data)
+        self.assertIn(b'Another Commentor', rv.data)
 
     def tearDown(self):
         db.drop_all()

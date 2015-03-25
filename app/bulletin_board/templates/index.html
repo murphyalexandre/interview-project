@@ -12,10 +12,14 @@
     <ul id="posts">
     {% for post in posts %}
         <li>
-            {{ post.title }} -
-            {{ post.message }} -
-            by {{ post.author }} -
-            on {{ post.date_created.strftime('%B %d, %Y - %-I:%M%p') }} -
+            <a href="view/{{ post.id }}">
+                {{ post.title }} -
+                by {{ post.author }} -
+                on {{ post.date_created.strftime('%B %d, %Y - %-I:%M%p') }}
+            </a><br/>
+            {{ post.message }}<br/>
+            {{ post.comments|length }} comments
+             -
             <a href="edit/{{ post.id }}">Edit</a>
         </li>
     {% endfor %}

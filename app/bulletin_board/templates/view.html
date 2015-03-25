@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>bulletin_board</title>
+</head>
+<body>
+
+<h1>bulletin_board</h1>
+
+    <p>
+        {{ post.title }}<br/>
+        by {{ post.author }}<br/>
+        on {{ post.date_created.strftime('%B %d, %Y - %-I:%M%p') }}
+    </p>
+
+    <p>{{ post.message }}</p>
+
+    <p>
+        <h4>Comments</h4>
+        <p>
+            <form action="/bulletin-board/comment" method="post">
+                <input type="hidden" name="id" value="{{ post.id }}">
+                Author:<br/>
+                <input type="text" name="author"><br/>
+                Enter a comment:<br/>
+                <textarea name="message"></textarea><br/>
+                <button type="submit">Submit</button>
+            </form>
+        </p>
+        {% if post.comments|length > 0 %}
+            <ul>
+            {% for comment in post.comments %}
+                <li>
+                        {{ comment.message }}<br/>
+                        {{ comment.author }} -
+                        {{ comment.date_created.strftime('%B %d, %Y - %-I:%M%p') }}
+                </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            Be the first to comment on this post.
+        {% endif %}
+    </p>
+
+    <br />
+    <a href="/bulletin-board/edit/{{ post.id }}">Edit</a>
+    <br />
+    <a href="/bulletin-board/">Back to list.</a>
+</body>
+</html>

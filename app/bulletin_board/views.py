@@ -1,9 +1,9 @@
-from flask import Blueprint, render_template, abort, request, redirect
+from flask import Blueprint, render_template, abort, request, redirect, url_for
 from jinja2 import TemplateNotFound
 
 from app import db
 
-from .models import Post
+from .models import Post, Comment
 
 bulletin_board = Blueprint(
     'bulletin_board',
@@ -22,6 +22,14 @@ def simple_page():
         return render_template('index.html', **data)
     except TemplateNotFound:
         abort(404)
+
+
+@bulletin_board.route('/view/<int:post_id>',  methods=['GET'])
+def view(post_id):
+    data = {
+        'post': Post.query.get_or_404(post_id)
+    }
+    return render_template('view.html', **data)
 
 
 @bulletin_board.route('/edit/<int:post_id>',  methods=['GET', 'POST'])
@@ -54,3 +62,22 @@ def add():
         return redirect('/bulletin-board')
 
     return render_template('add.html')
+
+
+@bulletin_board.route('/comment', methods=['POST'])
+def comment():
+    if request.method == 'POST':
+        post_id = int(request.form['id'])
+        post = Post.query.get_or_404(post_id)
+
+        comment = Comment(
+            message=request.form['message'],
+            author=request.form['author']
+        )
+
+        post.comments.append(comment)
+
+        db.session.add(comment)
+        db.session.commit()
+
+        return redirect('/bulletin-board/view/{}'.format(post_id))
