@@ -5,7 +5,7 @@ from flask.ext.login import current_user, login_required, login_user, logout_use
 from app import bcrypt, db, login_manager
 
 from .models import Post, Comment, User
-from .forms import LoginForm, RegistrationForm
+from .forms import AddPostForm, LoginForm, RegistrationForm
 
 bulletin_board = Blueprint(
     'bulletin_board',
@@ -52,7 +52,14 @@ def view(post_id):
 @bulletin_board.route('/edit/<int:post_id>',  methods=['GET', 'POST'])
 @login_required
 def edit(post_id):
-    if request.method == 'POST':
+    if g.user is None or not g.user.is_authenticated():
+        flash('You need to be logged in to do this.')
+        return redirect('/bulletin-board')
+
+    post = Post.query.get_or_404(post_id)
+
+    form = AddPostForm(obj=post)
+    if form.validate_on_submit():
         post_id = request.form['id']
         post = Post.query.get_or_404(post_id)
         post.title = request.form['title']
@@ -60,32 +67,30 @@ def edit(post_id):
         db.session.commit()
         return redirect('/bulletin-board')
 
-    data = {
-        'post': Post.query.get_or_404(post_id)
-    }
-    return render_template('edit.html', **data)
+    return render_template('edit.html', form=form, post=post)
 
 
 @bulletin_board.route('/add', methods=['GET', 'POST'])
 @login_required
 def add():
-    if request.method == 'POST':
-        if g.user is not None and g.user.is_authenticated():
-            post = Post(
-                title=request.form['title'],
-                message=request.form['message'],
-                user=g.user
-            )
+    if g.user is None or not g.user.is_authenticated():
+        flash('You need to be logged in to do this.')
+        return redirect('/bulletin-board')
 
-            db.session.add(post)
+    form = AddPostForm()
+    if form.validate_on_submit():
+        post = Post(
+            title=request.form['title'],
+            message=request.form['message'],
+            user=g.user
+        )
 
-            db.session.commit()
+        db.session.add(post)
+        db.session.commit()
 
-            return redirect('/bulletin-board')
-        else:
-            flash('You need to be logged in to do this.')
+        return redirect('/bulletin-board')
 
-    return render_template('add.html')
+    return render_template('add.html', form=form)
 
 
 @bulletin_board.route('/comment', methods=['POST'])

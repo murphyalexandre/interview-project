@@ -19,14 +19,14 @@
     {% endif %}
 {% endwith %}
 
-<form action="" method="post">
-Title:<br>
-<input type="text" name="title" value="" placeholder="Insert title here">
-<br>
-Message:<br>
-<input type="textarea" name="message" value="" placeholder="Write your message">
-<br><br>
-<input type="submit" value="Submit">
+{% from "_formhelpers.html" import render_field %}
+<form method="post" action="/bulletin-board/add">
+    {{ form.hidden_tag() }}
+    <dl>
+        {{ render_field(form.title) }}
+        {{ render_field(form.message) }}
+    </dl>
+    <p><button type="submit">Submit</button></p>
 </form>
 
 
