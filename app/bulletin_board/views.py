@@ -1,10 +1,12 @@
-from flask import Blueprint, render_template, abort, request, redirect, flash, g
+from flask import abort, Blueprint, flash, g, render_template, request, \
+    redirect
 from jinja2 import TemplateNotFound
-from flask.ext.login import current_user, login_required, login_user, logout_user
+from flask.ext.login import current_user, login_required, login_user, \
+    logout_user
 
 from app import bcrypt, db, login_manager
 
-from .models import Post, Comment, User
+from .models import Comment, Post, User
 from .forms import AddPostForm, LoginForm, RegistrationForm
 
 bulletin_board = Blueprint(
@@ -29,6 +31,7 @@ def before_request():
 @bulletin_board.route('/', methods=['GET'])
 def simple_page():
     try:
+        # Limiting to 5 recent posts
         data = {
             'posts': Post.query.order_by(Post.date_created.desc()).limit(5),
         }
@@ -84,10 +87,8 @@ def add():
             message=request.form['message'],
             user=g.user
         )
-
         db.session.add(post)
         db.session.commit()
-
         return redirect('/bulletin-board')
 
     return render_template('add.html', form=form)
@@ -132,7 +133,6 @@ def register():
 
             return redirect('/bulletin-board/login')
         else:
-            raise Exception('NO')
             flash('User with that email already exists.')
 
             return redirect('/bulletin-board/register')

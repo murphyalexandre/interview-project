@@ -4,6 +4,9 @@ from app import db
 
 
 class Post(db.Model):
+    """
+    A post object.
+    """
     __table_name__ = 'posts'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -24,6 +27,9 @@ class Post(db.Model):
 
 
 class Comment(db.Model):
+    """
+    A comment on a post.
+    """
     __table_name__ = 'comments'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -38,6 +44,9 @@ class Comment(db.Model):
 
 
 class User(db.Model):
+    """
+    A user object.
+    """
     __table_name__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)

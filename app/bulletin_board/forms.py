@@ -1,5 +1,6 @@
 from flask_wtf import Form
-from wtforms import BooleanField, TextField, HiddenField, PasswordField, TextAreaField, validators
+from wtforms import BooleanField, HiddenField, PasswordField, \
+    TextField, TextAreaField, validators
 
 
 class RegistrationForm(Form):

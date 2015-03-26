@@ -5,6 +5,9 @@ from app.bulletin_board.models import Post, Comment, User
 
 
 class IPTestCase(unittest.TestCase):
+    """
+    Our test cases. This should probably be splitted in multiple files.
+    """
 
     def add_post(self, title, message, user):
         post = Post(
