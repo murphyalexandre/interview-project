@@ -8,24 +8,36 @@
 
 <h1>bulletin_board</h1>
 
-    December 4, 2014 - 4:13pm
+    <p>
+    {% if user %}
+        Welcome, {{ user.username }}! - <a href="logout">Logout</a>
+    {% else %}
+        <a href="login">Login</a>
+    {% endif %}
+    </p>
+
     <ul id="posts">
     {% for post in posts %}
         <li>
             <a href="view/{{ post.id }}">
                 {{ post.title }} -
-                by {{ post.author }} -
+                by {{ post.user.username }} -
                 on {{ post.date_created.strftime('%B %d, %Y - %-I:%M%p') }}
             </a><br/>
             {{ post.message }}<br/>
             {{ post.comments|length }} comments
-             -
-            <a href="edit/{{ post.id }}">Edit</a>
+
+            {% if user and user.id == post.user_id %}
+                -
+                <a href="edit/{{ post.id }}">Edit</a>
+            {% endif %}
         </li>
     {% endfor %}
     </ul>
 
     <br />
-    <a href="add">Add a new post.</a>
+    {% if user %}
+        <a href="add">Add a new post.</a>
+    {% endif %}
 </body>
 </html>

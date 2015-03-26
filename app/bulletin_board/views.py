@@ -1,9 +1,11 @@
-from flask import Blueprint, render_template, abort, request, redirect, url_for
+from flask import Blueprint, render_template, abort, request, redirect, flash, g
 from jinja2 import TemplateNotFound
+from flask.ext.login import current_user, login_required, login_user, logout_user
 
-from app import db
+from app import bcrypt, db, login_manager
 
-from .models import Post, Comment
+from .models import Post, Comment, User
+from .forms import LoginForm, RegistrationForm
 
 bulletin_board = Blueprint(
     'bulletin_board',
@@ -13,12 +15,27 @@ bulletin_board = Blueprint(
 )
 
 
+# Needed by flask_login to reload user from session
+@login_manager.user_loader
+def load_user(user_email):
+    return User.query.filter_by(email=user_email).first()
+
+
+@bulletin_board.before_request
+def before_request():
+    g.user = current_user
+
+
 @bulletin_board.route('/', methods=['GET'])
 def simple_page():
     try:
         data = {
-            'posts': Post.query.order_by(Post.date_created.desc()).limit(5)
+            'posts': Post.query.order_by(Post.date_created.desc()).limit(5),
         }
+
+        data['user'] = g.user if g.user is not None and \
+            g.user.is_authenticated() else None
+
         return render_template('index.html', **data)
     except TemplateNotFound:
         abort(404)
@@ -33,13 +50,13 @@ def view(post_id):
 
 
 @bulletin_board.route('/edit/<int:post_id>',  methods=['GET', 'POST'])
+@login_required
 def edit(post_id):
     if request.method == 'POST':
         post_id = request.form['id']
         post = Post.query.get_or_404(post_id)
         post.title = request.form['title']
         post.message = request.form['message']
-        post.author = request.form['author']
         db.session.commit()
         return redirect('/bulletin-board')
 
@@ -50,21 +67,29 @@ def edit(post_id):
 
 
 @bulletin_board.route('/add', methods=['GET', 'POST'])
+@login_required
 def add():
     if request.method == 'POST':
-        post = Post(
-            title=request.form['title'],
-            message=request.form['message'],
-            author=request.form['author']
-        )
-        db.session.add(post)
-        db.session.commit()
-        return redirect('/bulletin-board')
+        if g.user is not None and g.user.is_authenticated():
+            post = Post(
+                title=request.form['title'],
+                message=request.form['message'],
+                user=g.user
+            )
+
+            db.session.add(post)
+
+            db.session.commit()
+
+            return redirect('/bulletin-board')
+        else:
+            flash('You need to be logged in to do this.')
 
     return render_template('add.html')
 
 
 @bulletin_board.route('/comment', methods=['POST'])
+@login_required
 def comment():
     if request.method == 'POST':
         post_id = int(request.form['id'])
@@ -72,7 +97,7 @@ def comment():
 
         comment = Comment(
             message=request.form['message'],
-            author=request.form['author']
+            user=g.user
         )
 
         post.comments.append(comment)
@@ -81,3 +106,65 @@ def comment():
         db.session.commit()
 
         return redirect('/bulletin-board/view/{}'.format(post_id))
+
+
+@bulletin_board.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user_exists = User.query.filter_by(email=form.email.data).first()
+        if user_exists is None:
+            user = User(
+                email=form.email.data,
+                username=form.username.data,
+                password=bcrypt.generate_password_hash(form.password.data)
+            )
+
+            db.session.add(user)
+            db.session.commit()
+
+            flash('Thank you for registering. You can now login.')
+
+            return redirect('/bulletin-board/login')
+        else:
+            raise Exception('NO')
+            flash('User with that email already exists.')
+
+            return redirect('/bulletin-board/register')
+
+    return render_template("register.html", form=form)
+
+
+@bulletin_board.route("/login", methods=["GET", "POST"])
+def login():
+    if g.user is not None and g.user.is_authenticated():
+        return redirect('/bulletin-board')
+
+    form = LoginForm()
+    if form.validate_on_submit():
+        # login and validate the user...
+        user = User.query.filter_by(email=form.email.data).first()
+        if user:
+            if bcrypt.check_password_hash(user.password, form.password.data):
+                user.authenticated = True
+
+                db.session.add(user)
+                db.session.commit()
+
+                login_user(user, remember=True)
+
+                return redirect('/bulletin-board')
+            else:
+                flash('Incorrect email / password combination')
+        else:
+            flash('User not found')
+
+    return render_template("login.html", form=form)
+
+
+@bulletin_board.route("/logout")
+@login_required
+def logout():
+    logout_user()
+
+    return redirect('/bulletin-board')

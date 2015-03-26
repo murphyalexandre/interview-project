@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>bulletin_board</title>
+</head>
+<body>
+
+<h1>bulletin_board</h1>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul>
+            {% for message in messages %}
+            <li>{{message}}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    {% endwith %}
+
+{% from "_formhelpers.html" import render_field %}
+<form method="post" action="/bulletin-board/login">
+    {{ form.hidden_tag() }}
+    <dl>
+        {{ render_field(form.email) }}
+        {{ render_field(form.password) }}
+    </dl>
+    <p><button type="submit">Login</button></p>
+</form>
+
+</body>
+</html>

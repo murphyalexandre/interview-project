@@ -9,12 +9,18 @@
 
 <h1>bulletin_board</h1>
 
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul>
+        {% for message in messages %}
+        <li>{{message}}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+{% endwith %}
 
 <form action="" method="post">
 <input type="hidden" name="id" value="{{ post.id }}">
-Author:<br>
-<input type="text" name="author" value="{{ post.author }}" placeholder="Insert author here">
-<br>
 Title:<br>
 <input type="text" name="title" value="{{ post.title }}" placeholder="Insert title here">
 <br>

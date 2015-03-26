@@ -21,8 +21,6 @@
         <p>
             <form action="/bulletin-board/comment" method="post">
                 <input type="hidden" name="id" value="{{ post.id }}">
-                Author:<br/>
-                <input type="text" name="author"><br/>
                 Enter a comment:<br/>
                 <textarea name="message"></textarea><br/>
                 <button type="submit">Submit</button>
@@ -33,7 +31,7 @@
             {% for comment in post.comments %}
                 <li>
                         {{ comment.message }}<br/>
-                        {{ comment.author }} -
+                        {{ comment.user.username }} -
                         {{ comment.date_created.strftime('%B %d, %Y - %-I:%M%p') }}
                 </li>
             {% endfor %}
